@@ -1,0 +1,56 @@
+name: "Build Signed APK"
+description: "Build a signed APK of your Android application"
+
+branding:
+  icon: cpu
+  color: red
+
+inputs:
+
+  keystore_b64:
+    description: "The contents of the keystore file, encoded as base64"
+    required: false
+    
+  keystore_password:
+    description: "Keystore file password"
+    required: true
+    
+  key_alias:
+    description: "Key alias"
+    required: true
+    
+  key_password:
+    description: "Key password"
+    required: true
+  
+  gradlew_dir:
+    description: "Directory of the gradlew file"
+    required: false
+    default: "."
+    
+runs:
+  using: "composite"
+  steps:
+  
+    - run: sudo apt-get -y update
+      shell: bash
+
+    - run: sudo apt-get -y install default-jdk
+      shell: bash
+      
+    - shell: bash
+      run: echo "${{ inputs.keystore_b64 }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
+      if: inputs.keystore_b64
+      
+    - shell: bash
+      working-directory: ${{ inputs.gradlew_dir }}
+      run: |
+        chmod +x ./gradlew
+        ./gradlew build
+        ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks \
+          -Pandroid.injected.signing.store.password=${{ inputs.keystore_password }} \
+          -Pandroid.injected.signing.key.alias=${{ inputs.key_alias }} \
+          -Pandroid.injected.signing.key.password=${{ inputs.key_password }}
+    - run: rm $GITHUB_WORKSPACE/signing-key.jks
+      shell: bash
