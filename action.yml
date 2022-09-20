@@ -58,7 +58,7 @@ runs:
           -Pandroid.injected.signing.store.password=${{ inputs.keystore_password }} \
           -Pandroid.injected.signing.key.alias=${{ inputs.key_alias }} \
           -Pandroid.injected.signing.key.password=${{ inputs.key_password }}
-        echo cd app/build/outputs && ls 
-        echo "::set-output name=bundlepath::$(echo /build/outputs/app-release.apk)"
+        cd ${{ inputs.gradlew_dir }}/app/build/outputs && ls 
+        echo "::set-output name=bundlepath::$(echo ${{ inputs.gradlew_dir }}/app/build/outputs/app-release.apk)"
     - run: rm $GITHUB_WORKSPACE/signing-key.jks
       shell: bash
