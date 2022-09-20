@@ -28,6 +28,12 @@ inputs:
     required: false
     default: "."
     
+outputs:
+
+  signed-bundle:
+    description: "Signed bundle"
+    value: ${{ steps.gradle-build-assemble.outputs.bundlepath }}
+    
 runs:
   using: "composite"
   steps:
@@ -43,6 +49,7 @@ runs:
       if: inputs.keystore_b64
       
     - shell: bash
+      id: gradle-build-assemble
       working-directory: ${{ inputs.gradlew_dir }}
       run: |
         gradle build
@@ -51,5 +58,7 @@ runs:
           -Pandroid.injected.signing.store.password=${{ inputs.keystore_password }} \
           -Pandroid.injected.signing.key.alias=${{ inputs.key_alias }} \
           -Pandroid.injected.signing.key.password=${{ inputs.key_password }}
+        echo cd app/build/outputs && ls 
+        echo "::set-output name=bundlepath::$(echo /build/outputs/app-release.apk)"
     - run: rm $GITHUB_WORKSPACE/signing-key.jks
       shell: bash
